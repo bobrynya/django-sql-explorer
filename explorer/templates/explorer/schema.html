@@ -1,29 +1,76 @@
 {% extends "explorer/base.html" %}
+{% load i18n %}
 
-{% block content %}
 
-    {% for m in schema %}
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h3 class="panel-title">{{ m.1 }}</h3> <small>{{ m.0 }}</small>
+{% block sql_explorer_content_takeover %}
+<div class="schema-wrapper">
+    <h4 class="text-center">Schema</h4>
+    <div id="tables">
+        <p class="text-center">
+          <input class="search" placeholder="Search" />
+        </p>
+        <div class="row">
+            <div class="col-xs-6 text-center">
+                <a class="btn btn-link" id="collapse_all">{% trans "Collapse All" %}</a>
             </div>
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th width="50%">Column</th>
-                        <th width="50%">Type</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for c in m.2 %}
-                    <tr>
-                        <td>{{ c.0 }}</td>
-                        <td>{{ c.1 }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+            <div class="col-xs-6 text-center">
+                <a class="btn btn-link" id="expand_all">{% trans "Expand All" %}</a>
+            </div>
         </div>
-    {% endfor %}
+        <ul class="list">
+            {% for m in schema %}
+                <li>
+                    <div class="panel panel-default">
+                        <div class="panel-heading schema-header">
+                            <h4 class="name panel-title" style="display: inline-block">{{ m.0 }}</h4>
+                        </div>
+                        <div class="table-responsive schema-table">
+                            <table class="table table-condensed table-hover">
+                                <thead>
+                                </thead>
+                                <tbody>
+                                    {% for c in m.1 %}
+                                    <tr>
+                                        <td width="50%"><code>{{ c.0 }}</code></td>
+                                        <!-- This will show the type of the column as well -->
+                                        <td width="50%" class="text-muted"><small>{{ c.1 }}</small></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}
+{% block sql_explorer_footer %}{% endblock %}
 
+{% block sql_explorer_scripts %}
+<script>
+    $(function() {
+        function SearchFocus() {
+            if (!$(window.parent.document.getElementById("schema_frame")).hasClass('no-autofocus')) {
+                $(".search").focus();
+            }
+        }
+        var options = {
+            valueNames: [ 'name', 'app' ],
+            handlers: { 'updated': [SearchFocus] }
+        };
+        var tableList = new List('tables', options);
+
+        $('#collapse_all').click(function(){
+            $('.schema-table').hide();
+        });
+        $('#expand_all').click(function(){
+            $('.schema-table').show();
+        });
+        $('.schema-header').click(function(){
+            $(this).parent().find('.schema-table').toggle();
+        });
+    });
+</script>
 {% endblock %}
